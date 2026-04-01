@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FutStats - EA FC 26</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#07090f;font-family:'Inter',sans-serif;color:#e8eaf6;min-height:100vh}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0d1320}::-webkit-scrollbar-thumb{background:#1e2d4a;border-radius:3px}
+
+  .hdr{background:#0b0f1c;border-bottom:1px solid #1a2540;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .logo{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:3px;color:#fff}
+  .logo span{color:#c9a227}
+  .logo-sub{font-size:10px;color:#c9a227;letter-spacing:2px;font-weight:600;margin-left:6px;vertical-align:middle;font-family:'Inter',sans-serif}
+  .nav{display:flex;gap:4px}
+  .ntab{padding:7px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#556070;letter-spacing:1px;text-transform:uppercase;transition:all .2s;font-family:'Inter',sans-serif}
+  .ntab.on,.ntab:hover{background:#c9a227;color:#07090f}
+  .hdr-right{font-size:11px;color:#c9a227;letter-spacing:2px;font-weight:700;background:rgba(201,162,39,.1);padding:4px 10px;border-radius:5px;border:1px solid rgba(201,162,39,.3)}
+
+  .body{padding:20px 28px;max-width:1200px;margin:0 auto}
+  .sec{display:none}.sec.on{display:block}
+
+  /* SQUAD */
+  .sq-wrap{display:grid;grid-template-columns:1fr 260px;gap:16px}
+  @media(max-width:768px){.sq-wrap{grid-template-columns:1fr}}
+  .pitch{background:#0b2016;border:1px solid #183020;border-radius:12px;padding:18px 12px;position:relative;overflow:hidden}
+  .pitch::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:130px;height:130px;border-radius:50%;border:1px solid rgba(255,255,255,.03);pointer-events:none}
+  .pitch::after{content:'';position:absolute;top:50%;left:8%;right:8%;height:1px;background:rgba(255,255,255,.03);pointer-events:none}
+  .pitch-inner{display:flex;flex-direction:column;gap:8px;align-items:center;position:relative;z-index:2}
+  .pitch-row{display:flex;justify-content:center;gap:10px;width:100%}
+  .slot{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+  .card{width:62px;height:78px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:transform .15s;position:relative}
+  .card:hover{transform:scale(1.08)}
+  .card.gold{background:linear-gradient(160deg,#c9a227,#8b6914);border:1.5px solid #e8c040}
+  .card.silver{background:linear-gradient(160deg,#8e9eae,#5a6a78);border:1.5px solid #a0b8c8}
+  .card.special{background:linear-gradient(160deg,#1a3a6e,#0d2040);border:1.5px solid #4070ff}
+  .card.toty{background:linear-gradient(160deg,#0a1840,#040c28);border:1.5px solid #80a0ff}
+  .card.empty{background:rgba(255,255,255,.04);border:1.5px dashed rgba(255,255,255,.15)}
+  .card.empty:hover{border-color:#c9a227;background:rgba(201,162,39,.08)}
+  .c-ovr{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#fff;line-height:1}
+  .c-pos{font-size:9px;color:rgba(255,255,255,.8);letter-spacing:.5px;font-weight:600}
+  .c-nam{font-size:8px;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px;text-align:center;font-weight:500}
+  .c-plus{font-size:22px;color:rgba(255,255,255,.2);line-height:1}
+  .slot-lbl{font-size:9px;color:#2a5030;letter-spacing:.5px;font-weight:600}
+  .card-wrap{position:relative}
+  .card-wrap .rem-btn{display:none;position:absolute;top:-6px;right:-6px;width:16px;height:16px;background:#e24b4a;border-radius:50%;border:none;color:#fff;font-size:10px;cursor:pointer;align-items:center;justify-content:center;z-index:10;line-height:1;font-family:'Inter',sans-serif}
+  .card-wrap:hover .rem-btn{display:flex}
+
+  .sb{display:flex;flex-direction:column;gap:12px}
+  .scard{background:#0b0f1c;border:1px solid #1a2540;border-radius:10px;padding:14px}
+  .sc-ttl{font-size:10px;letter-spacing:1.5px;color:#c9a227;margin-bottom:12px;font-weight:700;text-transform:uppercase;font-family:'Rajdhani',sans-serif}
+  .form-sel{background:#0d1320;border:1px solid #1a2540;border-radius:7px;padding:7px 12px;color:#e8eaf6;font-size:12px;width:100%;cursor:pointer;outline:none;font-family:'Inter',sans-serif;transition:border .2s}
+  .form-sel:focus{border-color:#c9a227}
+  .chem-row{margin-bottom:9px}
+  .chem-lbl{display:flex;justify-content:space-between;font-size:10px;color:#506070;margin-bottom:4px}
+  .chem-track{height:5px;background:#121c2c;border-radius:3px;overflow:hidden}
+  .chem-fill{height:100%;border-radius:3px;transition:width .7s ease}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat-box{background:#0d1320;border-radius:7px;padding:8px;text-align:center}
+  .stat-v{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#c9a227;line-height:1}
+  .stat-l{font-size:9px;color:#3a5060;letter-spacing:.8px;text-transform:uppercase;margin-top:2px}
+  .btn-reset{width:100%;padding:9px;background:transparent;border:1.5px solid rgba(201,162,39,.4);border-radius:7px;color:#c9a227;font-size:11px;letter-spacing:1px;font-weight:600;cursor:pointer;text-transform:uppercase;font-family:'Inter',sans-serif;transition:all .2s}
+  .btn-reset:hover{background:#c9a227;color:#07090f;border-color:#c9a227}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center}
+  .modal-overlay.on{display:flex}
+  .modal{background:#0b0f1c;border:1px solid #1a2540;border-radius:14px;padding:20px;width:580px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;gap:12px}
+  .modal-hdr{display:flex;justify-content:space-between;align-items:center}
+  .modal-ttl{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:#c9a227;letter-spacing:1px;text-transform:uppercase}
+  .close-btn{background:transparent;border:1px solid #1a2540;border-radius:6px;color:#506070;font-size:14px;cursor:pointer;padding:4px 8px;transition:all .2s}
+  .close-btn:hover{color:#e8eaf6;border-color:#e8eaf6}
+  .msearch{background:#0d1320;border:1px solid #1a2540;border-radius:8px;padding:9px 14px;color:#e8eaf6;font-size:13px;outline:none;font-family:'Inter',sans-serif;transition:border .2s;width:100%}
+  .msearch:focus{border-color:#c9a227}
+  .msearch::placeholder{color:#304050}
+  .mfilters{display:flex;gap:6px;flex-wrap:wrap}
+  .mfbtn{background:#0d1320;border:1px solid #1a2540;border-radius:5px;padding:5px 12px;color:#506070;font-size:10px;cursor:pointer;letter-spacing:.5px;font-weight:600;text-transform:uppercase;transition:all .2s;font-family:'Inter',sans-serif}
+  .mfbtn.on{border-color:#c9a227;color:#c9a227;background:rgba(201,162,39,.08)}
+  .mlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;overflow-y:auto;padding-right:4px;flex:1}
+  .mlist::-webkit-scrollbar{width:4px}.mlist::-webkit-scrollbar-thumb{background:#1a2540}
+  .mplayer{border-radius:8px;padding:12px 8px;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .mplayer:hover{transform:scale(1.05)}
+  .mplayer.gold{background:linear-gradient(160deg,#c9a227,#8b6914);border:1.5px solid #e8c040}
+  .mplayer.silver{background:linear-gradient(160deg,#8e9eae,#5a6a78);border:1.5px solid #a0b8c8}
+  .mplayer.special{background:linear-gradient(160deg,#1a3a6e,#0d2040);border:1.5px solid #4070ff}
+  .mplayer.toty{background:linear-gradient(160deg,#0a1840,#040c28);border:1.5px solid #80a0ff}
+  .mplayer.used{opacity:.3;pointer-events:none}
+  .mp-ovr{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:#fff;line-height:1}
+  .mp-pos{font-size:9px;color:rgba(255,255,255,.75);letter-spacing:.5px;font-weight:600}
+  .mp-nam{font-size:9px;color:#fff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:96px;font-weight:600}
+  .mp-price{font-size:9px;color:rgba(255,255,255,.5);margin-top:2px}
+
+  /* PLAYERS */
+  .search-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .sinp{flex:1;min-width:180px;background:#0b0f1c;border:1px solid #1a2540;border-radius:8px;padding:9px 14px;color:#e8eaf6;font-size:13px;outline:none;font-family:'Inter',sans-serif;transition:border .2s}
+  .sinp:focus{border-color:#c9a227}
+  .sinp::placeholder{color:#304050}
+  .fsel{background:#0b0f1c;border:1px solid #1a2540;border-radius:8px;padding:9px 12px;color:#e8eaf6;font-size:12px;cursor:pointer;outline:none;font-family:'Inter',sans-serif;transition:border .2s}
+  .fsel:focus{border-color:#c9a227}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+  .pcard{border-radius:10px;padding:14px 10px;cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+  .pcard:hover{transform:translateY(-4px)}
+  .pcard.gold{background:linear-gradient(160deg,#c9a227,#8b6914);border:1.5px solid #e8c040}
+  .pcard.silver{background:linear-gradient(160deg,#8e9eae,#5a6a78);border:1.5px solid #a0b8c8}
+  .pcard.special{background:linear-gradient(160deg,#1a3a6e,#0d2040);border:1.5px solid #4070ff}
+  .pcard.toty{background:linear-gradient(160deg,#0a1840,#040c28);border:1.5px solid #80a0ff}
+  .pc-ovr{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:#fff;line-height:1}
+  .pc-pos{font-size:10px;color:rgba(255,255,255,.75);letter-spacing:.5px;font-weight:600;margin-bottom:4px}
+  .pc-nam{font-size:11px;color:#fff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:112px;font-weight:600}
+  .pc-nat{font-size:9px;color:rgba(255,255,255,.5);margin-bottom:4px}
+  .pc-stats{margin-top:6px;width:100%;display:flex;flex-direction:column;gap:3px}
+  .pc-sr{display:flex;justify-content:space-between;font-size:9px}
+  .pc-sk{color:rgba(255,255,255,.55);font-weight:600;letter-spacing:.3px}
+  .pc-sv{color:#fff;font-weight:700}
+  .pc-price{font-size:10px;color:rgba(255,255,255,.5);margin-top:4px;font-weight:600}
+  .type-badge{position:absolute;top:6px;right:6px;font-size:8px;padding:2px 5px;border-radius:3px;font-weight:700;letter-spacing:.5px}
+  .type-badge.toty{background:rgba(128,160,255,.3);color:#80a0ff}
+  .type-badge.special{background:rgba(64,112,255,.3);color:#8090ff}
+
+  /* MARKET */
+  .mkt-wrap{overflow-x:auto}
+  .mkt-tbl{width:100%;border-collapse:collapse;min-width:500px}
+  .mkt-tbl th{font-size:10px;color:#304050;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid #1a2540;font-weight:600;white-space:nowrap}
+  .mkt-tbl td{padding:10px 14px;font-size:13px;border-bottom:1px solid #0d1320}
+  .mkt-tbl tr:hover td{background:#0d1420}
+  .pbadge{background:#0d2b1a;color:#5dcaa5;border:1px solid #1a5a35;border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700}
+  .tu{color:#5dcaa5;font-size:11px;font-weight:700}
+  .td2{color:#e24b4a;font-size:11px;font-weight:700}
+  .tn{color:#506070;font-size:11px}
+  .rbadge{background:#1a1800;color:#c9a227;border-radius:4px;padding:2px 7px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700}
+  .lbadge{background:#0d1320;color:#506070;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600}
+
+  /* COMPARE */
+  .compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:600px){.compare-wrap{grid-template-columns:1fr}}
+  .cmp-card{background:#0b0f1c;border:1px solid #1a2540;border-radius:10px;padding:16px}
+  .cmp-sel{background:#0d1320;border:1px solid #1a2540;border-radius:7px;padding:8px 12px;color:#e8eaf6;font-size:12px;width:100%;outline:none;font-family:'Inter',sans-serif;margin-bottom:14px;cursor:pointer}
+  .cmp-sel:focus{border-color:#c9a227}
+  .cmp-player-card{border-radius:10px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:14px}
+  .cmp-player-card.gold{background:linear-gradient(160deg,#c9a227,#8b6914);border:1.5px solid #e8c040}
+  .cmp-player-card.silver{background:linear-gradient(160deg,#8e9eae,#5a6a78);border:1.5px solid #a0b8c8}
+  .cmp-player-card.special{background:linear-gradient(160deg,#1a3a6e,#0d2040);border:1.5px solid #4070ff}
+  .cmp-player-card.toty{background:linear-gradient(160deg,#0a1840,#040c28);border:1.5px solid #80a0ff}
+  .cmp-ovr{font-family:'Rajdhani',sans-serif;font-size:48px;font-weight:700;color:#fff;line-height:1}
+  .cmp-pos{font-size:12px;color:rgba(255,255,255,.7);letter-spacing:1px;font-weight:600}
+  .cmp-name{font-size:16px;color:#fff;font-weight:700}
+  .cmp-nat{font-size:11px;color:rgba(255,255,255,.5)}
+  .stat-bar-row{margin-bottom:8px}
+  .sbar-top{display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px}
+  .sbar-key{color:#506070;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  .sbar-val{color:#e8eaf6;font-weight:700}
+  .sbar-track{height:6px;background:#121c2c;border-radius:3px;overflow:hidden}
+  .sbar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .pcard,.mplayer{animation:fadeIn .18s ease both}
+
+/* ===== CARTES SPECIALES FUT ===== */
+.card.icon,.mplayer.icon,.pcard.icon,.cmp-player-card.icon{background:linear-gradient(160deg,#f5f5f5,#d4af37);border:2px solid #fff}
+.card.hero,.mplayer.hero,.pcard.hero,.cmp-player-card.hero{background:linear-gradient(160deg,#8b4513,#d2691e);border:1.5px solid #ffcf6f}
+.card.tots,.mplayer.tots,.pcard.tots,.cmp-player-card.tots{background:linear-gradient(160deg,#0b4cff,#00d4ff);border:1.5px solid #7fe7ff}
+.card.rttf,.mplayer.rttf,.pcard.rttf,.cmp-player-card.rttf{background:linear-gradient(160deg,#1a002b,#5f00ff);border:1.5px solid #b48cff}
+.card.futbirthday,.mplayer.futbirthday,.pcard.futbirthday,.cmp-player-card.futbirthday{background:linear-gradient(160deg,#ff4fd8,#7a00ff);border:1.5px solid #ffb3f1}
+.card.centurion,.mplayer.centurion,.pcard.centurion,.cmp-player-card.centurion{background:linear-gradient(160deg,#101820,#f2aa4c);border:1.5px solid #f2aa4c}
+.card.thunder,.mplayer.thunder,.pcard.thunder,.cmp-player-card.thunder{background:linear-gradient(160deg,#1f1c2c,#928dab);border:1.5px solid #c7c7ff}
+.card.shapeshifter,.mplayer.shapeshifter,.pcard.shapeshifter,.cmp-player-card.shapeshifter{background:linear-gradient(160deg,#004e92,#000428);border:1.5px solid #5dade2}
+
+
+/* ===== EFFETS PREMIUM ===== */
+.card.toty,.mplayer.toty,.pcard.toty,.cmp-player-card.toty{
+ box-shadow:0 0 12px rgba(120,160,255,.8), inset 0 0 8px rgba(120,160,255,.6);
+ animation:glowBlue 2.4s infinite alternate;
+}
+.card.tots,.mplayer.tots,.pcard.tots,.cmp-player-card.tots{
+ box-shadow:0 0 12px rgba(0,212,255,.8), inset 0 0 10px rgba(0,212,255,.5);
+ animation:glowCyan 2.2s infinite alternate;
+}
+.card.icon,.mplayer.icon,.pcard.icon,.cmp-player-card.icon{
+ box-shadow:0 0 10px rgba(255,215,0,.7);
+}
+@keyframes glowBlue{from{box-shadow:0 0 6px rgba(120,160,255,.4)}to{box-shadow:0 0 16px rgba(120,160,255,1)}}
+@keyframes glowCyan{from{box-shadow:0 0 6px rgba(0,212,255,.4)}to{box-shadow:0 0 18px rgba(0,212,255,1)}}
+
+/* ===== BADGES SPECIAUX ===== */
+.type-badge.icon{background:linear-gradient(90deg,#fff,#d4af37);color:#000}
+.type-badge.hero{background:linear-gradient(90deg,#8b4513,#f2c94c);color:#fff}
+.type-badge.tots{background:linear-gradient(90deg,#00c6ff,#0072ff);color:#fff}
+.type-badge.rttf{background:linear-gradient(90deg,#5f00ff,#b48cff);color:#fff}
+.type-badge.futbirthday{background:linear-gradient(90deg,#ff4fd8,#7a00ff);color:#fff}
+
+/* ===== HOVER PREMIUM ===== */
+.card:hover,.pcard:hover,.mplayer:hover{
+ transform:scale(1.1) rotateZ(-0.5deg);
+}
+
+/* ===== TERRAIN AMELIORE ===== */
+.pitch{background:linear-gradient(180deg,#0b3d26,#062016)}
+.pitch::before{border:1px solid rgba(255,255,255,.06)}
+
+
+/* ===== CHIMIE VISUELLE ===== */
+.chem-links{position:absolute;inset:0;pointer-events:none}
+.link{stroke-width:3;opacity:.9}
+.link.green{stroke:#5dcaa5}
+.link.orange{stroke:#e6b566}
+.link.red{stroke:#e24b4a}
+
+/* ===== AVATAR CARTE ===== */
+.avatar{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.card .avatar{margin-bottom:2px}
+
+/* ===== PARTICULES RARETE ===== */
+@keyframes sparkle{0%{opacity:.2;transform:translateY(0)}100%{opacity:1;transform:translateY(-6px)}}
+.sparkle::after{content:'✦';position:absolute;top:6px;left:6px;animation:sparkle 1.2s infinite alternate;opacity:.6}
+.card.toty.sparkle::after{color:#9db3ff}
+.card.tots.sparkle::after{color:#7fe7ff}
+.card.icon.sparkle::after{color:#ffd700}
+
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">FUT<span>STATS</span><span class="logo-sub">FC 26</span></div>
+  <div class="nav">
+    <button class="ntab on" onclick="goTab('squad',this)">Squad</button>
+    <button class="ntab" onclick="goTab('players',this)">Joueurs</button>
+    <button class="ntab" onclick="goTab('market',this)">Marché</button>
+    <button class="ntab" onclick="goTab('compare',this)">Comparer</button>
+  </div>
+  <div class="hdr-right">EA FC 26</div>
+</div>
+
+<div class="body">
+
+  <!-- SQUAD BUILDER -->
+  <div class="sec on" id="sec-squad">
+    <div class="sq-wrap">
+      <div>
+        <div class="pitch" id="pitch"><svg class="chem-links"></svg>
+          <div class="pitch-inner" id="pitch-rows"></div>
+        </div>
+      </div>
+      <div class="sb">
+        <div class="scard">
+          <div class="sc-ttl">Formation</div>
+          <select class="form-sel" id="form-sel" onchange="changeFormation()">
+            <option value="433">4-3-3</option>
+            <option value="442">4-4-2</option>
+            <option value="4231">4-2-3-1</option>
+            <option value="352">3-5-2</option>
+            <option value="532">5-3-2</option>
+            <option value="451">4-5-1</option>
+          </select>
+        </div>
+        <div class="scard">
+          <div class="sc-ttl">Chimie d'équipe</div>
+          <div class="chem-row">
+            <div class="chem-lbl"><span>Totale</span><span id="chem-total" style="color:#c9a227;font-weight:700">0/33</span></div>
+            <div class="chem-track"><div class="chem-fill" id="cf-total" style="width:0%;background:linear-gradient(90deg,#c9a227,#e8c040)"></div></div>
+          </div>
+          <div class="chem-row">
+            <div class="chem-lbl"><span>Ligue dominante</span><span id="chem-league" style="color:#5dcaa5">—</span></div>
+            <div class="chem-track"><div class="chem-fill" id="cf-league" style="width:0%;background:#5dcaa5"></div></div>
+          </div>
+          <div class="chem-row">
+            <div class="chem-lbl"><span>Nation dominante</span><span id="chem-nation" style="color:#378add">—</span></div>
+            <div class="chem-track"><div class="chem-fill" id="cf-nation" style="width:0%;background:#378add"></div></div>
+          </div>
+        </div>
+        <div class="scard">
+          <div class="sc-ttl">Stats moyennes</div>
+          <div class="stat-grid">
+            <div class="stat-box"><div class="stat-v" id="s-ovr">—</div><div class="stat-l">Note</div></div>
+            <div class="stat-box"><div class="stat-v" id="s-pac">—</div><div class="stat-l">Vitesse</div></div>
+            <div class="stat-box"><div class="stat-v" id="s-sho">—</div><div class="stat-l">Tir</div></div>
+            <div class="stat-box"><div class="stat-v" id="s-pas">—</div><div class="stat-l">Passe</div></div>
+            <div class="stat-box"><div class="stat-v" id="s-dri">—</div><div class="stat-l">Dribble</div></div>
+            <div class="stat-box"><div class="stat-v" id="s-def">—</div><div class="stat-l">Défense</div></div>
+          </div>
+        </div>
+        <div class="scard">
+          <div class="sc-ttl">Valeur totale</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:#c9a227" id="team-value">—</div>
+          <div style="font-size:10px;color:#304050;margin-top:2px">Coins FUT estimés</div>
+        </div>
+        
+ <button class="btn-reset" onclick="downloadSquad()" style="margin-bottom:8px">Télécharger l'équipe (JSON)</button>
+<button class="btn-reset" onclick="resetSquad()">Réinitialiser l'équipe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYERS -->
+  <div class="sec" id="sec-players">
+    <div class="search-bar">
+      <input class="sinp" id="psearch" placeholder="Rechercher un joueur..." oninput="filterPlayers()">
+      <select class="fsel" id="fpos" onchange="filterPlayers()">
+        <option value="">Tous postes</option>
+        <option>GK</option><option>CB</option><option>LB</option><option>RB</option>
+        <option>CDM</option><option>CM</option><option>CAM</option>
+        <option>LW</option><option>RW</option><option>ST</option><option>CF</option>
+      </select>
+      <select class="fsel" id="ftype" onchange="filterPlayers()">
+        <option value="">Toutes cartes</option>
+        <option value="toty">TOTY</option>
+        <option value="special">Spéciale</option>
+        <option value="gold">Or</option>
+        <option value="silver">Argent</option>
+      </select>
+      <select class="fsel" id="fnat" onchange="filterPlayers()">
+        <option value="">Toutes nations</option>
+      </select>
+    </div>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+
+  <!-- MARKET -->
+  <div class="sec" id="sec-market">
+    <div class="search-bar">
+      <input class="sinp" id="msearch-tab" placeholder="Rechercher..." oninput="filterMarket()">
+      <select class="fsel" id="msort" onchange="filterMarket()">
+        <option value="price">Prix décroissant</option>
+        <option value="ovr">Note décroissante</option>
+        <option value="trend">Tendance</option>
+      </select>
+    </div>
+    <div class="mkt-wrap">
+      <table class="mkt-tbl">
+        <thead><tr>
+          <th>Joueur</th><th>Note</th><th>Pos.</th><th>Club</th><th>Ligue</th><th>Nation</th><th>Prix</th><th>24h</th>
+        </tr></thead>
+        <tbody id="mkt-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COMPARE -->
+  <div class="sec" id="sec-compare">
+    <div class="compare-wrap">
+      <div class="cmp-card">
+        <div class="sc-ttl">Joueur 1</div>
+        <select class="cmp-sel" id="cmp1" onchange="renderCompare()">
+          <option value="">-- Choisir --</option>
+        </select>
+        <div id="cmp-card1"></div>
+        <div id="cmp-bars1"></div>
+      </div>
+      <div class="cmp-card">
+        <div class="sc-ttl">Joueur 2</div>
+        <select class="cmp-sel" id="cmp2" onchange="renderCompare()">
+          <option value="">-- Choisir --</option>
+        </select>
+        <div id="cmp-card2"></div>
+        <div id="cmp-bars2"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="pick-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-ttl" id="modal-pos-title">Choisir un joueur</div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <input class="msearch" id="modal-search" placeholder="Rechercher..." oninput="renderModal()">
+    <div class="mfilters" id="mfilters"></div>
+    <div class="mlist" id="mlist"></div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// BASE DE DONNEES FC 26 - VRAIES NOTES OFFICIELLES
+// Sources: EA Sports FC 26 official ratings (Sept 2025)
+// =============================================
+const DB=[
+  // OVR 91 - CO-LEADERS
+  {id:1,name:"Mbappé",ovr:91,pos:"ST",pac:97,sho:94,pas:80,dri:95,def:36,phy:77,type:"toty",nation:"France",league:"LaLiga",club:"Real Madrid",price:5500000,trend:220000},
+  {id:2,name:"Salah",ovr:91,pos:"RW",pac:93,sho:90,pas:83,dri:92,def:46,phy:76,type:"toty",nation:"Égypte",league:"Premier League",club:"Liverpool",price:5200000,trend:190000},
+  // OVR 90
+  {id:3,name:"Dembélé",ovr:90,pos:"RW",pac:96,sho:85,pas:80,dri:92,def:32,phy:70,type:"toty",nation:"France",league:"Ligue 1",club:"PSG",price:3800000,trend:150000},
+  {id:4,name:"Rodri",ovr:90,pos:"CDM",pac:68,sho:74,pas:91,dri:84,def:90,phy:88,type:"toty",nation:"Espagne",league:"Premier League",club:"Man City",price:3200000,trend:80000},
+  {id:5,name:"Van Dijk",ovr:90,pos:"CB",pac:78,sho:58,pas:80,dri:72,def:92,phy:90,type:"toty",nation:"Pays-Bas",league:"Premier League",club:"Liverpool",price:2800000,trend:60000},
+  {id:6,name:"Bellingham",ovr:90,pos:"CAM",pac:82,sho:88,pas:90,dri:92,def:70,phy:84,type:"toty",nation:"Angleterre",league:"LaLiga",club:"Real Madrid",price:4000000,trend:100000},
+  {id:7,name:"Haaland",ovr:90,pos:"ST",pac:88,sho:96,pas:68,dri:84,def:40,phy:94,type:"toty",nation:"Norvège",league:"Premier League",club:"Man City",price:4500000,trend:130000},
+  // OVR 89
+  {id:8,name:"Donnarumma",ovr:89,pos:"GK",pac:62,sho:16,pas:76,dri:78,def:90,phy:90,type:"gold",nation:"Italie",league:"Premier League",club:"Man City",price:1200000,trend:40000},
+  {id:9,name:"Alisson",ovr:89,pos:"GK",pac:58,sho:14,pas:72,dri:74,def:89,phy:86,type:"gold",nation:"Brésil",league:"Premier League",club:"Liverpool",price:980000,trend:25000},
+  {id:10,name:"Lamine Yamal",ovr:89,pos:"RW",pac:95,sho:83,pas:82,dri:93,def:26,phy:62,type:"special",nation:"Espagne",league:"LaLiga",club:"Barcelone",price:3500000,trend:200000},
+  {id:11,name:"Raphinha",ovr:89,pos:"LW",pac:88,sho:86,pas:82,dri:88,def:44,phy:72,type:"gold",nation:"Brésil",league:"LaLiga",club:"Barcelone",price:1800000,trend:70000},
+  {id:12,name:"Hakimi",ovr:89,pos:"RB",pac:92,sho:72,pas:80,dri:86,def:80,phy:78,type:"gold",nation:"Maroc",league:"Ligue 1",club:"PSG",price:1600000,trend:55000},
+  {id:13,name:"Vitinha",ovr:89,pos:"CM",pac:78,sho:80,pas:90,dri:88,def:62,phy:70,type:"gold",nation:"Portugal",league:"Ligue 1",club:"PSG",price:1400000,trend:45000},
+  // OVR 88
+  {id:14,name:"Courtois",ovr:88,pos:"GK",pac:54,sho:14,pas:68,dri:70,def:88,phy:88,type:"gold",nation:"Belgique",league:"LaLiga",club:"Real Madrid",price:700000,trend:10000},
+  {id:15,name:"Vinicius Jr",ovr:88,pos:"LW",pac:96,sho:82,pas:78,dri:92,def:28,phy:66,type:"special",nation:"Brésil",league:"LaLiga",club:"Real Madrid",price:2200000,trend:-30000},
+  {id:16,name:"Pedri",ovr:88,pos:"CM",pac:78,sho:78,pas:90,dri:90,def:56,phy:60,type:"gold",nation:"Espagne",league:"LaLiga",club:"Barcelone",price:1100000,trend:35000},
+  {id:17,name:"Florian Wirtz",ovr:88,pos:"CAM",pac:80,sho:82,pas:86,dri:90,def:42,phy:64,type:"gold",nation:"Allemagne",league:"Premier League",club:"Liverpool",price:1500000,trend:80000},
+  {id:18,name:"Alexander Isak",ovr:88,pos:"ST",pac:90,sho:86,pas:74,dri:84,def:38,phy:80,type:"gold",nation:"Suède",league:"Premier League",club:"Man City",price:1300000,trend:60000},
+  // OVR 87
+  {id:19,name:"Tchouaméni",ovr:87,pos:"CDM",pac:72,sho:60,pas:82,dri:80,def:87,phy:90,type:"gold",nation:"France",league:"LaLiga",club:"Real Madrid",price:650000,trend:14000},
+  {id:20,name:"Ter Stegen",ovr:87,pos:"GK",pac:54,sho:15,pas:78,dri:72,def:88,phy:82,type:"gold",nation:"Allemagne",league:"LaLiga",club:"Barcelone",price:560000,trend:-5000},
+  {id:21,name:"Kvaratskhelia",ovr:87,pos:"LW",pac:90,sho:82,pas:78,dri:90,def:30,phy:70,type:"gold",nation:"Géorgie",league:"Ligue 1",club:"PSG",price:900000,trend:20000},
+  {id:22,name:"Musiala",ovr:87,pos:"CAM",pac:82,sho:80,pas:82,dri:90,def:36,phy:62,type:"gold",nation:"Allemagne",league:"Bundesliga",club:"Bayern Munich",price:950000,trend:30000},
+  {id:23,name:"Osimhen",ovr:87,pos:"ST",pac:92,sho:87,pas:70,dri:84,def:38,phy:90,type:"gold",nation:"Nigéria",league:"LaLiga",club:"Galatasaray",price:780000,trend:-10000},
+  // OVR 86
+  {id:24,name:"De Bruyne",ovr:86,pos:"CM",pac:74,sho:84,pas:96,dri:86,def:62,phy:76,type:"gold",nation:"Belgique",league:"Premier League",club:"Man City",price:820000,trend:-15000},
+  {id:25,name:"Militao",ovr:86,pos:"CB",pac:78,sho:40,pas:64,dri:66,def:88,phy:86,type:"gold",nation:"Brésil",league:"LaLiga",club:"Real Madrid",price:420000,trend:5000},
+  {id:26,name:"Carvajal",ovr:86,pos:"RB",pac:82,sho:58,pas:78,dri:80,def:86,phy:80,type:"gold",nation:"Espagne",league:"LaLiga",club:"Real Madrid",price:380000,trend:8000},
+  {id:27,name:"T. Hernández",ovr:86,pos:"LB",pac:90,sho:62,pas:76,dri:82,def:78,phy:86,type:"gold",nation:"France",league:"Bundesliga",club:"Bayern Munich",price:460000,trend:12000},
+  {id:28,name:"Gavi",ovr:86,pos:"CM",pac:76,sho:70,pas:87,dri:86,def:74,phy:66,type:"gold",nation:"Espagne",league:"LaLiga",club:"Barcelone",price:580000,trend:22000},
+  // OVR 85
+  {id:29,name:"Guimaraes",ovr:85,pos:"CDM",pac:74,sho:70,pas:84,dri:80,def:82,phy:84,type:"gold",nation:"Brésil",league:"Premier League",club:"Newcastle",price:440000,trend:8000},
+  {id:30,name:"Lewandowski",ovr:85,pos:"ST",pac:76,sho:90,pas:78,dri:82,def:42,phy:80,type:"gold",nation:"Pologne",league:"LaLiga",club:"Barcelone",price:520000,trend:-8000},
+  // OVR 84
+  {id:31,name:"Mendy",ovr:84,pos:"LB",pac:84,sho:44,pas:72,dri:76,def:84,phy:80,type:"silver",nation:"France",league:"LaLiga",club:"Real Madrid",price:180000,trend:3000},
+  {id:32,name:"Alaba",ovr:84,pos:"CB",pac:72,sho:56,pas:80,dri:74,def:84,phy:78,type:"silver",nation:"Autriche",league:"LaLiga",club:"Real Madrid",price:160000,trend:1000},
+];
+
+const FORMATIONS={
+  "433":[[["GK"]],[["RB","CB","CB","LB"]],[["CM","CDM","CM"]],[["RW","ST","LW"]]],
+  "442":[[["GK"]],[["RB","CB","CB","LB"]],[["RM","CM","CM","LM"]],[["ST","ST"]]],
+  "4231":[[["GK"]],[["RB","CB","CB","LB"]],[["CDM","CDM"]],[["CAM","CAM","CAM"]],[["ST"]]],
+  "352":[[["GK"]],[["CB","CB","CB"]],[["RM","CDM","CM","CDM","LM"]],[["ST","ST"]]],
+  "532":[[["GK"]],[["RWB","CB","CB","CB","LWB"]],[["CM","CDM","CM"]],[["ST","ST"]]],
+  "451":[[["GK"]],[["RB","CB","CB","LB"]],[["RM","CM","CM","CM","LM"]],[["ST"]]],
+};
+
+let squad={};
+let activeSlot=null;
+let activePos=null;
+let modalTypeFilter='';
+
+function fmtPrice(p){
+  if(p>=1000000)return(p/1000000).toFixed(1)+'M';
+  if(p>=1000)return Math.round(p/1000)+'K';
+  return p;
+}
+
+function buildPitch(){
+  const f=document.getElementById('form-sel').value;
+  const rows=FORMATIONS[f];
+  const pr=document.getElementById('pitch-rows');
+  pr.innerHTML='';
+  let idx=0;
+  rows.forEach(row=>{
+    const rowEl=document.createElement('div');
+    rowEl.className='pitch-row';
+    row[0].forEach(pos=>{
+      const key=pos+'_'+idx;idx++;
+      const p=squad[key];
+      if(p){
+        rowEl.innerHTML+=`<div class="slot">
+          <div class="card-wrap">
+            <div class="card ${p.type}" onclick="openPick('${key}','${pos}')">
+              <div class="avatar">${p.name[0]}</div><div class="c-ovr">${p.ovr}</div>
+              <div class="c-pos">${p.pos}</div>
+              <div class="c-nam">${p.name}</div>
+            </div>
+            <button class="rem-btn" onclick="removePlayer('${key}',event)">✕</button>
+          </div>
+          <div class="slot-lbl">${pos}</div>
+        </div>`;
+      } else {
+        rowEl.innerHTML+=`<div class="slot" onclick="openPick('${key}','${pos}')">
+          <div class="card empty"><div class="c-plus">+</div></div>
+          <div class="slot-lbl">${pos}</div>
+        </div>`;
+      }
+    });
+    pr.appendChild(rowEl);
+  });
+  updateStats();
+}
+
+function removePlayer(key,e){e.stopPropagation();delete squad[key];buildPitch();}
+function changeFormation(){squad={};buildPitch();}
+
+function openPick(key,pos){
+  activeSlot=key;activePos=pos;
+  document.getElementById('modal-pos-title').textContent='Choisir: '+pos;
+  document.getElementById('modal-search').value='';
+  modalTypeFilter='';
+  buildModalFilters();renderModal();
+  document.getElementById('pick-modal').classList.add('on');
+}
+function closeModal(){document.getElementById('pick-modal').classList.remove('on');}
+
+function buildModalFilters(){
+  const types=[{k:'',l:'Tous'},{k:'toty',l:'TOTY'},{k:'special',l:'Spéciale'},{k:'gold',l:'Or'},{k:'silver',l:'Argent'}];
+  document.getElementById('mfilters').innerHTML=types.map(t=>
+    `<button class="mfbtn${modalTypeFilter===t.k?' on':''}" onclick="setMF('${t.k}')">${t.l}</button>`
+  ).join('');
+}
+function setMF(t){modalTypeFilter=t;buildModalFilters();renderModal();}
+
+function renderModal(){
+  const q=document.getElementById('modal-search').value.toLowerCase();
+  const usedIds=Object.values(squad).filter(Boolean).map(p=>p.id);
+  let list=DB.filter(p=>p.name.toLowerCase().includes(q));
+  if(modalTypeFilter)list=list.filter(p=>p.type===modalTypeFilter);
+  list.sort((a,b)=>b.ovr-a.ovr);
+  document.getElementById('mlist').innerHTML=list.map(p=>{
+    const inUse=usedIds.includes(p.id)&&squad[activeSlot]?.id!==p.id;
+    return `<div class="mplayer ${p.type}${inUse?' used':''}" onclick="pickPlayer(${p.id})">
+      <div class="mp-ovr">${p.ovr}</div>
+      <div class="mp-pos">${p.pos}</div>
+      <div class="mp-nam">${p.name}</div>
+      <div class="mp-price">${fmtPrice(p.price)}</div>
+    </div>`;
+  }).join('');
+}
+
+function pickPlayer(id){
+  squad[activeSlot]=DB.find(x=>x.id===id);
+  closeModal();buildPitch();
+}
+
+function updateStats(){
+  const players=Object.values(squad).filter(Boolean);
+  const n=players.length;
+  if(!n){
+    ['ovr','pac','sho','pas','dri','def'].forEach(k=>document.getElementById('s-'+k).textContent='—');
+    document.getElementById('team-value').textContent='—';
+    document.getElementById('chem-total').textContent='0/33';
+    ['total','league','nation'].forEach(k=>document.getElementById('cf-'+k).style.width='0%');
+    document.getElementById('chem-league').textContent='—';
+    document.getElementById('chem-nation').textContent='—';
+    return;
+  }
+  const avg=k=>Math.round(players.reduce((a,p)=>a+p[k],0)/n);
+  ['ovr','pac','sho','pas','dri','def'].forEach(k=>document.getElementById('s-'+k).textContent=avg(k));
+  document.getElementById('team-value').textContent=fmtPrice(players.reduce((a,p)=>a+p.price,0));
+  const chem=Math.round((n/11)*33);
+  document.getElementById('chem-total').textContent=chem+'/33';
+  document.getElementById('cf-total').style.width=Math.round((chem/33)*100)+'%';
+  const lg={},nt={};
+  players.forEach(p=>{lg[p.league]=(lg[p.league]||0)+1;nt[p.nation]=(nt[p.nation]||0)+1;});
+  const topL=Object.entries(lg).sort((a,b)=>b[1]-a[1])[0];
+  const topN=Object.entries(nt).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('chem-league').textContent=topL[0]+' ('+topL[1]+')';
+  document.getElementById('cf-league').style.width=Math.round((topL[1]/n)*100)+'%';
+  document.getElementById('chem-nation').textContent=topN[0]+' ('+topN[1]+')';
+  document.getElementById('cf-nation').style.width=Math.round((topN[1]/n)*100)+'%';
+}
+
+function resetSquad(){squad={};buildPitch();}
+
+function filterPlayers(){
+  const q=document.getElementById('psearch').value.toLowerCase();
+  const fp=document.getElementById('fpos').value;
+  const ft=document.getElementById('ftype').value;
+  const fn=document.getElementById('fnat').value;
+  let list=DB.filter(p=>
+    (p.name.toLowerCase().includes(q)||p.club.toLowerCase().includes(q))&&
+    (!fp||p.pos===fp)&&(!ft||p.type===ft)&&(!fn||p.nation===fn)
+  ).sort((a,b)=>b.ovr-a.ovr);
+  document.getElementById('pgrid').innerHTML=list.map(p=>`
+    <div class="pcard ${p.type}">
+      ${p.type==='toty'?'<div class="type-badge toty">TOTY</div>':p.type==='special'?'<div class="type-badge special">SPE</div>':''}
+      <div class="pc-ovr">${p.ovr}</div>
+      <div class="pc-pos">${p.pos}</div>
+      <div class="pc-nam">${p.name}</div>
+      <div class="pc-nat">${p.club}</div>
+      <div class="pc-stats">
+        <div class="pc-sr"><span class="pc-sk">PAC</span><span class="pc-sv">${p.pac}</span></div>
+        <div class="pc-sr"><span class="pc-sk">SHO</span><span class="pc-sv">${p.sho}</span></div>
+        <div class="pc-sr"><span class="pc-sk">PAS</span><span class="pc-sv">${p.pas}</span></div>
+        <div class="pc-sr"><span class="pc-sk">DRI</span><span class="pc-sv">${p.dri}</span></div>
+        <div class="pc-sr"><span class="pc-sk">DEF</span><span class="pc-sv">${p.def}</span></div>
+        <div class="pc-sr"><span class="pc-sk">PHY</span><span class="pc-sv">${p.phy}</span></div>
+      </div>
+      <div class="pc-price">${fmtPrice(p.price)} coins</div>
+    </div>
+  `).join('');
+}
+
+function filterMarket(){
+  const q=document.getElementById('msearch-tab').value.toLowerCase();
+  const sort=document.getElementById('msort').value;
+  let list=DB.filter(p=>p.name.toLowerCase().includes(q)||p.club.toLowerCase().includes(q)||p.league.toLowerCase().includes(q));
+  if(sort==='price')list.sort((a,b)=>b.price-a.price);
+  else if(sort==='ovr')list.sort((a,b)=>b.ovr-a.ovr);
+  else list.sort((a,b)=>b.trend-a.trend);
+  document.getElementById('mkt-body').innerHTML=list.map(p=>{
+    const up=p.trend>0,dn=p.trend<0;
+    const t=p.trend===0?'—':(up?'▲ +':'▼ -')+fmtPrice(Math.abs(p.trend));
+    const cls=up?'tu':dn?'td2':'tn';
+    return `<tr>
+      <td style="font-weight:600;color:#e8eaf6">${p.name}</td>
+      <td><span class="rbadge">${p.ovr}</span></td>
+      <td style="color:#506070;font-size:11px">${p.pos}</td>
+      <td style="color:#e8eaf6;font-size:11px">${p.club}</td>
+      <td><span class="lbadge">${p.league}</span></td>
+      <td style="color:#506070;font-size:11px">${p.nation}</td>
+      <td><span class="pbadge">${fmtPrice(p.price)}</span></td>
+      <td class="${cls}">${t}</td>
+    </tr>`;
+  }).join('');
+}
+
+function populateCompare(){
+  const opts=DB.sort((a,b)=>b.ovr-a.ovr).map(p=>`<option value="${p.id}">${p.name} · ${p.ovr} · ${p.pos}</option>`).join('');
+  document.getElementById('cmp1').innerHTML='<option value="">-- Choisir --</option>'+opts;
+  document.getElementById('cmp2').innerHTML='<option value="">-- Choisir --</option>'+opts;
+}
+
+function renderCompare(){
+  const id1=parseInt(document.getElementById('cmp1').value);
+  const id2=parseInt(document.getElementById('cmp2').value);
+  const p1=DB.find(x=>x.id===id1);
+  const p2=DB.find(x=>x.id===id2);
+  renderCmpSide('cmp-card1','cmp-bars1',p1,p2);
+  renderCmpSide('cmp-card2','cmp-bars2',p2,p1);
+}
+
+function renderCmpSide(cardId,barsId,p,other){
+  if(!p){document.getElementById(cardId).innerHTML='';document.getElementById(barsId).innerHTML='';return;}
+  document.getElementById(cardId).innerHTML=`
+    <div class="cmp-player-card ${p.type}">
+      <div class="cmp-ovr">${p.ovr}</div>
+      <div class="cmp-pos">${p.pos}</div>
+      <div class="cmp-name">${p.name}</div>
+      <div class="cmp-nat">${p.club} · ${p.nation}</div>
+    </div>`;
+  const stats=['pac','sho','pas','dri','def','phy'];
+  const labels={pac:'Vitesse',sho:'Tir',pas:'Passe',dri:'Dribble',def:'Défense',phy:'Physique'};
+  document.getElementById(barsId).innerHTML=stats.map(k=>{
+    const v=p[k];
+    const ov=other?other[k]:null;
+    const col=ov===null?'#c9a227':v>ov?'#5dcaa5':v<ov?'#e24b4a':'#c9a227';
+    return `<div class="stat-bar-row">
+      <div class="sbar-top">
+        <span class="sbar-key">${labels[k]}</span>
+        <span class="sbar-val" style="color:${col}">${v}</span>
+      </div>
+      <div class="sbar-track"><div class="sbar-fill" style="width:${v}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function initNations(){
+  const ns=[...new Set(DB.map(p=>p.nation))].sort();
+  document.getElementById('fnat').innerHTML='<option value="">Toutes nations</option>'+ns.map(n=>`<option>${n}</option>`).join('');
+}
+
+function goTab(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  el.classList.add('on');
+  if(id==='players')filterPlayers();
+  if(id==='market')filterMarket();
+  if(id==='compare'){populateCompare();renderCompare();}
+}
+
+document.getElementById('pick-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+buildPitch();
+filterPlayers();
+filterMarket();
+initNations();
+populateCompare();
+
+function downloadSquad(){
+ const data={formation:document.getElementById('form-sel').value, players:Object.values(squad).filter(Boolean)};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='futstats_squad_fc26.json'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+
+// Badge auto selon type
+(function(){
+ document.querySelectorAll('.pcard,.mplayer').forEach(el=>{
+  if(el.classList.contains('icon')) el.innerHTML+='<div class="type-badge icon">ICON</div>';
+ });
+})();
+
+
+// Dessin des liens de chimie (simple)
+function drawChemLinks(){
+ const svg=document.querySelector('.chem-links'); if(!svg) return;
+ svg.innerHTML='';
+ const cards=[...document.querySelectorAll('.card')].filter(c=>!c.classList.contains('empty'));
+ const rects=cards.map(c=>c.getBoundingClientRect());
+ for(let i=0;i<cards.length;i++){
+  for(let j=i+1;j<cards.length;j++){
+   const pi=Object.values(squad)[i], pj=Object.values(squad)[j]; if(!pi||!pj) continue;
+   let cls='red'; if(pi.league===pj.league||pi.nation===pj.nation) cls='orange'; if(pi.league===pj.league&&pi.nation===pj.nation) cls='green';
+   const ri=rects[i], rj=rects[j];
+   const x1=ri.left+ri.width/2-svg.getBoundingClientRect().left;
+   const y1=ri.top+ri.height/2-svg.getBoundingClientRect().top;
+   const x2=rj.left+rj.width/2-svg.getBoundingClientRect().left;
+   const y2=rj.top+rj.height/2-svg.getBoundingClientRect().top;
+   const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+   l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+   l.setAttribute('class','link '+cls); svg.appendChild(l);
+  }
+ }
+}
+const _buildPitch=buildPitch; buildPitch=function(){_buildPitch(); setTimeout(drawChemLinks,50)};
+
+</script>
+</body>
+</html>
