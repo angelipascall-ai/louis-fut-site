@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Louis FUT — GOD ENGINE 9000</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{margin:0;background:#05070d;color:#e8eaf6;font-family:Arial}
+header{padding:16px 24px;border-bottom:1px solid #1a2540;display:flex;justify-content:space-between}
+h1 span{color:#ffd700}
+input,select{background:#0b0f1c;border:1px solid #1a2540;color:#e8eaf6;padding:8px;border-radius:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:16px}
+.card{background:linear-gradient(160deg,#f4d03f,#b38600);border-radius:10px;padding:10px;text-align:center;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<h1>Louis <span>FUT</span> — GOD 9000</h1>
+<input id="search" placeholder="Recherche joueur">
+</header>
+<div class="grid" id="grid"></div>
+<script>
+const NATIONS=["FR","BR","AR","PT","ES","DE","EN","IT","NL","NG","MA","US","JP"];
+const POS=["ST","LW","RW","CAM","CM","CDM","CB","LB","RB","GK"];
+const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+function gen(n=9000){
+ const arr=[];
+ for(let i=1;i<=n;i++){
+  const ovr=r(65,i<200?91:88);
+  const base=Math.min(99,ovr+r(-5,8));
+  arr.push({id:i,name:`PLAYER_${i}`,pos:POS[r(0,POS.length-1)],nation:NATIONS[r(0,NATIONS.length-1)],ovr,
+   pac:base+r(-10,10),sho:base+r(-10,10),dri:base+r(-10,10),phy:base+r(-10,10)});
+ }
+ return arr;
+}
+const DB=gen(9000);
+const meta=p=>Math.round((p.pac+p.sho+p.dri+p.phy)/4);
+const grid=document.getElementById('grid');
+function render(list){grid.innerHTML=list.map(p=>`<div class="card">${p.name}<br>${p.pos} ${p.ovr}<br>META ${meta(p)}</div>`).join('');}
+render(DB);
+search.oninput=e=>{const q=e.target.value.toLowerCase();render(DB.filter(p=>p.name.toLowerCase().includes(q)));};
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Louis FUT — GOD MODE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#05070d;--panel:#0b0f1c;--gold:#ffd700;--green:#35f0a3;--red:#ff4d4d;
+ --text:#e8eaf6;--muted:#8b93b5;
+}
+*{box-sizing:border-box;margin:0}
+body{background:radial-gradient(circle at top,#0a1022,#05070d 60%);color:var(--text);font-family:Inter}
+header{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:rgba(7,9,15,.85);backdrop-filter:blur(6px);border-bottom:1px solid #1a2540}
+.logo{font-family:Rajdhani;font-size:28px;font-weight:700;letter-spacing:2px}
+.logo span{color:var(--gold)}
+nav button{background:none;border:none;color:#757fa6;margin-left:14px;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer}
+nav button.active, nav button:hover{color:var(--gold)}
+main{max-width:1200px;margin:auto;padding:26px}
+section{display:none;animation:fade .4s ease}section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(16px)}to{opacity:1}}
+.hero{border:1px solid #1a2540;border-radius:18px;padding:48px;text-align:center;background:linear-gradient(160deg,#0f1838,#070b16);box-shadow:0 0 40px rgba(255,215,0,.08)}
+.hero h1{font-family:Rajdhani;font-size:52px;color:var(--gold)}
+.hero p{margin-top:10px;color:var(--muted)}
+.hero button{margin-top:22px;padding:16px 34px;font-weight:800;border-radius:14px;border:2px solid var(--gold);background:none;color:var(--gold);cursor:pointer}
+.hero button:hover{background:var(--gold);color:#05070d}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.card{background:linear-gradient(160deg,#f4d03f,#b38600);border-radius:16px;padding:14px;text-align:center;font-family:Rajdhani;font-weight:700;position:relative;box-shadow:0 0 14px rgba(0,0,0,.4)}
+.card.special{background:linear-gradient(160deg,#13306e,#081a3a)}
+.star{position:absolute;top:8px;right:10px;cursor:pointer;font-size:14px;color:#fff;opacity:.5}
+.star.on{color:var(--gold);opacity:1}
+.metaRing{margin:10px auto 0;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;background:conic-gradient(var(--gold) calc(var(--m)*1%),#1a2540 0)}
+.panel{background:var(--panel);border:1px solid #1a2540;border-radius:16px;padding:20px}
+.console{background:#020409;border:1px solid #0f2a1d;color:#35f0a3;font-family:monospace;padding:18px;border-radius:14px;box-shadow:0 0 20px rgba(53,240,163,.2)}
+.console span{opacity:.8}
+footer{text-align:center;font-size:11px;color:#506070;padding:30px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">LOUIS <span>FUT</span> GOD</div>
+ <nav>
+  <button class="active" onclick="go('home',this)">Accueil</button>
+  <button onclick="go('players',this)">Joueurs</button>
+  <button onclick="go('god',this)">GOD IA</button>
+ </nav>
+</header>
+<main>
+<section id="home" class="active">
+ <div class="hero">
+  <h1>GOD MODE ACTIVÉ</h1>
+  <p>Système d’analyse supra‑META • IA FUT • Vision parfaite</p>
+  <button onclick="go('players',document.querySelectorAll('nav button')[1])">Entrer dans le SYSTÈME</button>
+ </div>
+</section>
+<section id="players">
+ <div class="grid" id="playersGrid"></div>
+</section>
+<section id="god">
+ <div class="panel">
+  <h2 style="color:var(--gold);margin-bottom:12px">Analyse Divine</h2>
+  <div class="console" id="console"></div>
+ </div>
+</section>
+</main>
+<footer>Louis FUT — GOD MODE © 2026</footer>
+<script>
+const DB=[
+ {id:1,name:'Mbappé',ovr:91,pac:97,sho:94,dri:95,phy:77,type:'special'},
+ {id:2,name:'Vinicius Jr',ovr:88,pac:96,sho:82,dri:92,phy:66,type:'special'},
+ {id:3,name:'Bellingham',ovr:90,pac:82,sho:88,dri:92,phy:84,type:'special'},
+ {id:4,name:'Van Dijk',ovr:90,pac:78,sho:58,dri:72,phy:90,type:'special'}
+];
+let fav=[];
+const meta=p=>Math.round((p.pac+p.sho+p.dri+p.phy)/4);
+function card(p){const m=meta(p);return `<div class="card ${p.type}" style="--m:${m}"><div class="star ${fav.includes(p.id)?'on':''}" onclick="toggleFav(${p.id})">★</div><div>${p.name}</div><div>${p.ovr}</div><div class="metaRing">${m}</div></div>`}
+function renderPlayers(){playersGrid.innerHTML=DB.map(card).join('')}
+function toggleFav(id){fav.includes(id)?fav=fav.filter(x=>x!==id):fav.push(id);renderPlayers();runGod()}
+function runGod(){let txt='';if(!fav.length){txt='▶ Aucun joueur sélectionné…';consoleEl().innerHTML=txt;return;}const avg=(k)=>Math.round(fav.reduce((a,id)=>a+DB.find(p=>p.id===id)[k],0)/fav.length);txt+=`▶ Scan divin lancé…<br>`;txt+=`▶ Vitesse moyenne : ${avg('pac')}<br>`;txt+=`▶ Dribble moyen : ${avg('dri')}<br>`;txt+=`▶ Physique moyen : ${avg('phy')}<br>`;txt+= avg('pac')<85? '❌ Manque de vitesse détecté<br>':'✅ Vitesse optimale<br>';txt+= avg('phy')<75? '⚠️ Physique fragile<br>':'✅ Domination physique<br>';txt+='▶ Diagnostic FINAL : ' + ((avg('pac')+avg('dri')>170)?'TEAM BROKEN ✅':'TEAM PERFECTIBLE ⚠️');consoleEl().innerHTML=txt}
+function consoleEl(){return document.getElementById('console')}
+function go(id,btn){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');runGod()}
+renderPlayers();
+</script>
+</body>
+</html>
